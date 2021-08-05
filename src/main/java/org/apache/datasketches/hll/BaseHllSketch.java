@@ -339,6 +339,34 @@ abstract class BaseHllSketch {
   }
 
   /**
+   * Present the given byte array as a potential unique item.
+   * If the byte array is null or empty no update attempt is made and the method returns.
+   *
+   * @param data The given byte array.
+   * @param start The offset to start at.
+   * @param length The amount of bytes to consume.
+   */
+  public void update(final byte[] data, int start, int length) {
+    if ((data == null) || (data.length == 0)) { return; }
+    assert start >= 0 && length > 0;
+    assert start + length <= data.length;
+    couponUpdate(coupon(hash(data, start, length, DEFAULT_UPDATE_SEED)));
+  }
+
+  /**
+   * Present the given Memory as a potential unique item.
+   * If the memory is null or empty no update attempt is made and the method returns.
+   *
+   * @param mem The memory to consume.,
+   * @param start The offset to start at.
+   * @param length The amount of bytes to consume.
+   */
+  public void update(Memory mem, int start, int length) {
+    if ((mem == null) || (length == 0)) { return; }
+    couponUpdate(coupon(hash(mem, start, length, DEFAULT_UPDATE_SEED)));
+  }
+
+  /**
    * Present the given char array as a potential unique item.
    * If the char array is null or empty no update attempt is made and the method returns.
    *

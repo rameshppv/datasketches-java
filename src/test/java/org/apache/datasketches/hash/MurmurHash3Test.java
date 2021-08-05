@@ -22,6 +22,7 @@ package org.apache.datasketches.hash;
 import static org.apache.datasketches.hash.MurmurHash3.hash;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import org.apache.datasketches.memory.Memory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -71,6 +72,52 @@ public class MurmurHash3Test {
   }
 
   @Test
+  public void checkByteArrReaminderOffsetEQ8() { //byte[], test a remainder = 8
+    String keyStr = "Blah The quick brown fox jumps over the lazy1";
+    byte[] key = keyStr.getBytes(UTF_8);
+    long[] result = hash(key, 5, key.length - 5, 0);
+    //Should be:
+    long h1 = 0xe3301a827e5cdfe3L;
+    long h2 = 0xbdbf05f8da0f0392L;
+    Assert.assertEquals(result[0], h1);
+    Assert.assertEquals(result[1], h2);
+  }
+  public void checkByteArrRemainderOffsetGT8() { //byte[], remainder > 8
+    String keyStr = "Blah Blah The quick brown fox jumps over the lazy dog";
+    byte[] key = keyStr.getBytes(UTF_8);
+    long[] result = hash(key, 10, key.length - 10, 0);
+    //Should be:
+    long h1 = 0xe34bbc7bbc071b6cL;
+    long h2 = 0x7a433ca9c49a9347L;
+    Assert.assertEquals(result[0], h1);
+    Assert.assertEquals(result[1], h2);
+  }
+
+  @Test
+  public void checkByteArrChangeOffset1bit() { //byte[], change one bit
+    String keyStr = "Blah Blah Blah The quick brown fox jumps over the lazy eog";
+    byte[] key = keyStr.getBytes(UTF_8);
+    long[] result = hash(key, 15, key.length - 15, 0);
+    //Should be:
+    long h1 = 0x362108102c62d1c9L;
+    long h2 = 0x3285cd100292b305L;
+    Assert.assertEquals(result[0], h1);
+    Assert.assertEquals(result[1], h2);
+  }
+
+  @Test
+  public void checkByteArrRemainderOffsetLt8() { //byte[], test a remainder < 8
+    String keyStr = "Bah The quick brown fox jumps over the lazy dogdogdog";
+    byte[] key = keyStr.getBytes(UTF_8);
+    long[] result = hash(key, 4, key.length - 4, 0);
+    //Should be;
+    long h1 = 0x9c8205300e612fc4L;
+    long h2 = 0xcbc0af6136aa3df9L;
+    Assert.assertEquals(result[0], h1);
+    Assert.assertEquals(result[1], h2);
+  }
+
+  @Test
   public void checkByteArrReaminderEQ8() { //byte[], test a remainder = 8
     String keyStr = "The quick brown fox jumps over the lazy1";
     byte[] key = keyStr.getBytes(UTF_8);
@@ -80,7 +127,110 @@ public class MurmurHash3Test {
     long h2 = 0xbdbf05f8da0f0392L;
     Assert.assertEquals(result[0], h1);
     Assert.assertEquals(result[1], h2);
+  }
 
+  @Test
+  public void checkMemoryRemainderGT8() { //byte[], remainder > 8
+    String keyStr = "The quick brown fox jumps over the lazy dog";
+    byte[] byteKey = keyStr.getBytes(UTF_8);
+    Memory key = Memory.wrap(byteKey);
+    long[] result = hash(key, 0, byteKey.length, 0);
+    //Should be:
+    long h1 = 0xe34bbc7bbc071b6cL;
+    long h2 = 0x7a433ca9c49a9347L;
+    Assert.assertEquals(result[0], h1);
+    Assert.assertEquals(result[1], h2);
+  }
+
+  @Test
+  public void checkMemoryChange1bit() { //byte[], change one bit
+    String keyStr = "The quick brown fox jumps over the lazy eog";
+    byte[] byteKey = keyStr.getBytes(UTF_8);
+    Memory key = Memory.wrap(byteKey);
+    long[] result = hash(key, 0, byteKey.length, 0);
+    //Should be:
+    long h1 = 0x362108102c62d1c9L;
+    long h2 = 0x3285cd100292b305L;
+    Assert.assertEquals(result[0], h1);
+    Assert.assertEquals(result[1], h2);
+  }
+
+  @Test
+  public void checMemoryRemainderLt8() { //byte[], test a remainder < 8
+    String keyStr = "The quick brown fox jumps over the lazy dogdogdog";
+    byte[] byteKey = keyStr.getBytes(UTF_8);
+    Memory key = Memory.wrap(byteKey);
+    long[] result = hash(key, 0, byteKey.length, 0);
+    //Should be;
+    long h1 = 0x9c8205300e612fc4L;
+    long h2 = 0xcbc0af6136aa3df9L;
+    Assert.assertEquals(result[0], h1);
+    Assert.assertEquals(result[1], h2);
+  }
+
+  @Test
+  public void checkMemoryRemainderEQ8() { //byte[], test a remainder = 8
+    String keyStr = "The quick brown fox jumps over the lazy1";
+    byte[] byteKey = keyStr.getBytes(UTF_8);
+    Memory key = Memory.wrap(byteKey);
+    long[] result = hash(key, 0, byteKey.length, 0);
+    //Should be:
+    long h1 = 0xe3301a827e5cdfe3L;
+    long h2 = 0xbdbf05f8da0f0392L;
+    Assert.assertEquals(result[0], h1);
+    Assert.assertEquals(result[1], h2);
+  }
+
+  @Test
+  public void checkMemoryRemainderOffsetGT8() { //byte[], remainder > 8
+    String keyStr = "Blah The quick brown fox jumps over the lazy dog";
+    byte[] byteKey = keyStr.getBytes(UTF_8);
+    Memory key = Memory.wrap(byteKey);
+    long[] result = hash(key, 5, byteKey.length - 5, 0);
+    //Should be:
+    long h1 = 0xe34bbc7bbc071b6cL;
+    long h2 = 0x7a433ca9c49a9347L;
+    Assert.assertEquals(result[0], h1);
+    Assert.assertEquals(result[1], h2);
+  }
+
+  @Test
+  public void checkMemoryChangeOffset1bit() { //byte[], change one bit
+    String keyStr = "Blah Blah The quick brown fox jumps over the lazy eog";
+    byte[] byteKey = keyStr.getBytes(UTF_8);
+    Memory key = Memory.wrap(byteKey);
+    long[] result = hash(key, 10, byteKey.length - 10, 0);
+    //Should be:
+    long h1 = 0x362108102c62d1c9L;
+    long h2 = 0x3285cd100292b305L;
+    Assert.assertEquals(result[0], h1);
+    Assert.assertEquals(result[1], h2);
+  }
+
+  @Test
+  public void checMemoryRemainderOffsetLt8() { //byte[], test a remainder < 8
+    String keyStr = "Bah The quick brown fox jumps over the lazy dogdogdog";
+    byte[] byteKey = keyStr.getBytes(UTF_8);
+    Memory key = Memory.wrap(byteKey);
+    long[] result = hash(key, 4, byteKey.length - 4, 0);
+    //Should be;
+    long h1 = 0x9c8205300e612fc4L;
+    long h2 = 0xcbc0af6136aa3df9L;
+    Assert.assertEquals(result[0], h1);
+    Assert.assertEquals(result[1], h2);
+  }
+
+  @Test
+  public void checkMemoryRemainderOffsetEQ8() { //byte[], test a remainder = 8
+    String keyStr = "Bah Bah The quick brown fox jumps over the lazy1";
+    byte[] byteKey = keyStr.getBytes(UTF_8);
+    Memory key = Memory.wrap(byteKey);
+    long[] result = hash(key, 8, byteKey.length - 8, 0);
+    //Should be:
+    long h1 = 0xe3301a827e5cdfe3L;
+    long h2 = 0xbdbf05f8da0f0392L;
+    Assert.assertEquals(result[0], h1);
+    Assert.assertEquals(result[1], h2);
   }
 
   /**
@@ -96,7 +246,6 @@ public class MurmurHash3Test {
     long h2 = 0xbdbf05f8da0f0392L;
     Assert.assertEquals(result[0], h1);
     Assert.assertEquals(result[1], h2);
-
   }
 
   /**
@@ -126,7 +275,6 @@ public class MurmurHash3Test {
     Assert.assertEquals(result[1], h2);
   }
 
-
   /**
    * Tests an odd remainder of int[].
    */
@@ -141,7 +289,6 @@ public class MurmurHash3Test {
     Assert.assertEquals(result[0], h1);
     Assert.assertEquals(result[1], h2);
   }
-
 
   /**
    * Tests an odd remainder of int[].
@@ -227,7 +374,6 @@ public class MurmurHash3Test {
     println(org.apache.datasketches.Util.longToHexBytes(out[1]));
   }
 
-
   //Helper methods
   private static long[] stringToLongs(String in) {
     byte[] bArr = in.getBytes(UTF_8);
@@ -278,5 +424,4 @@ public class MurmurHash3Test {
   static void println(String s) {
     //System.out.println(s); //disable here
   }
-
 }
